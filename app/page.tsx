@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import Accordion from "@/components/ui/Accordion";
+import FAQAccordion from "@/components/ui/FAQAccordion";
 
 const faqItems = [
   {
@@ -127,7 +127,7 @@ export default function HomePage() {
 
             {/* Feature 2 */}
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="space-y-4 md:order-2">
+              <div className="space-y-4">
                 <h3 className="text-3xl md:text-4xl font-semibold">
                   Keeps your visitors on your site.
                 </h3>
@@ -135,7 +135,7 @@ export default function HomePage() {
                   Don't lose visitors to Google. Provide your visitors with fast, reliable AI answers and suggested topics so they can continue to explore your site.
                 </p>
               </div>
-              <div className="md:order-1">
+              <div>
                 <Image
                   src="https://gist.ai/wp-content/uploads/2025/09/why-answers-1-1024x819-png.webp"
                   alt="Keep visitors on site"
@@ -169,7 +169,7 @@ export default function HomePage() {
 
             {/* Feature 4 */}
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="space-y-4 md:order-2">
+              <div className="space-y-4">
                 <h3 className="text-3xl md:text-4xl font-semibold">
                   Launches in minutes.
                 </h3>
@@ -177,7 +177,7 @@ export default function HomePage() {
                   Install with a short snippet of code— works with WordPress, Webflow, Wix, Ghost, and more.
                 </p>
               </div>
-              <div className="md:order-1">
+              <div>
                 <Image
                   src="https://gist.ai/wp-content/uploads/2025/09/why-answers-4-1024x819-jpg.webp"
                   alt="Easy installation"
@@ -192,11 +192,11 @@ export default function HomePage() {
 
         {/* Try It CTA Section */}
         <section className="py-32 md:py-44 bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('https://gist.ai/wp-content/uploads/2025/08/bg2.svg')" }}>
-          <div className="container mx-auto px-6 md:px-12 text-center">
-            <h2 className="text-6xl md:text-8xl font-semibold mb-10">
+          <div className="container mx-auto px-6 md:px-12">
+            <h2 className="text-5xl md:text-7xl font-semibold mb-6 text-[#4E4E4E]">
               Try it out, it's free.
             </h2>
-            <p className="text-2xl md:text-3xl max-w-4xl mx-auto mb-10">
+            <p className="text-xl md:text-2xl max-w-4xl mb-10 text-[#4E4E4E]">
               You can even earn revenue by displaying relevant sponsored messages that blend naturally into the user experience.
             </p>
             <Button variant="gradient-icon" size="lg" onClick={() => setIsModalOpen(true)}>
@@ -250,15 +250,26 @@ export default function HomePage() {
           <h2 className="text-4xl md:text-5xl font-semibold mb-12">
             Frequently asked questions
           </h2>
-          <Accordion items={faqItems} />
+          <FAQAccordion items={faqItems} />
         </section>
 
         {/* Ready CTA Section */}
         <section className="py-64 bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('https://gist.ai/wp-content/uploads/2025/08/answers-ready_.png')" }}>
           <div className="container mx-auto px-6 md:px-12 text-center">
-            <h2 className="text-7xl md:text-9xl font-semibold text-gradient-sunset mb-10">
-              Ready?
-            </h2>
+            <div className="mb-10">
+              <h2
+                className="text-7xl md:text-9xl font-semibold pb-4 inline-block"
+                style={{
+                  background: 'linear-gradient(90deg, #FFAF07 0%, #926DD7 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  display: 'inline-block',
+                }}
+              >
+                Ready?
+              </h2>
+            </div>
             <Button variant="gradient-icon" size="lg" onClick={() => setIsModalOpen(true)}>
               Join Waitlist
             </Button>

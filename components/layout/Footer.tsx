@@ -1,26 +1,12 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Linkedin, Youtube, Twitter } from "lucide-react";
 
 export default function Footer() {
   return (
     <footer className="bg-grimace text-white">
       <div className="container mx-auto px-6 md:px-12">
-        {/* Logo Section */}
-        <div className="pt-36 pb-44">
-          <Link href="/">
-            <Image
-              src="https://gist.ai/wp-content/uploads/2025/09/logo-footer.png"
-              alt="Gist AI"
-              width={135}
-              height={40}
-              className="mb-8"
-            />
-          </Link>
-        </div>
-
         {/* Main Footer Content */}
-        <div className="grid md:grid-cols-3 gap-8 md:gap-16 pb-24">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-16 py-16">
           {/* Column 1 - Info & Support */}
           <div className="space-y-6">
             <p className="text-[#9f88bc] mb-5">
@@ -99,33 +85,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2 - Products */}
-          <div className="space-y-6">
-            <p className="text-[#ffffff54] text-sm font-semibold">Products</p>
-
-            <Link
-              href="/answers"
-              className="block text-xl font-semibold hover:text-[#9f88bc] transition-colors"
-            >
-              Gist Answers™
-            </Link>
-
-            <Link
-              href="/ads"
-              className="block text-xl font-semibold hover:text-[#9f88bc] transition-colors"
-            >
-              Gist Ads™
-            </Link>
-
-            <Link
-              href="#contact-us"
-              className="block text-xl font-semibold hover:text-[#9f88bc] transition-colors"
-            >
-              Gist Attribution™
-            </Link>
-          </div>
-
-          {/* Column 3 - Legal */}
+          {/* Column 2 - Legal */}
           <div className="space-y-6">
             <p className="text-[#ffffff54] text-sm">
               © 2025 ProrataAI, Inc.<br />

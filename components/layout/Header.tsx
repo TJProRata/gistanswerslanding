@@ -25,13 +25,13 @@ export default function Header({ onOpenModal }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Right side - Contact Us */}
+          {/* Right side - Join Waitlist */}
           <div className="flex items-center gap-4">
             <button
               onClick={onOpenModal}
               className="px-6 py-3 border border-[#353535] text-[#353535] rounded-full font-semibold hover:bg-dark hover:text-white hover:border-dark transition-all"
             >
-              Contact Us
+              Join Waitlist
             </button>
           </div>
         </div>

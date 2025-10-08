@@ -17,17 +17,25 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const addToWaitlist = useMutation(api.waitlist.add);
+  const addToWaitlist = useMutation(api.waitlist.addGist);
 
   useEffect(() => {
     if (isOpen) {
+      // Calculate scrollbar width before hiding it
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+      // Prevent body scroll and compensate for scrollbar
       document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
+      // Restore body scroll and remove padding
       document.body.style.overflow = "unset";
+      document.body.style.paddingRight = "0px";
     }
 
     return () => {
       document.body.style.overflow = "unset";
+      document.body.style.paddingRight = "0px";
     };
   }, [isOpen]);
 
@@ -49,13 +57,54 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
         });
       }
 
+      // Track Waitlist conversion for Meta Pixel
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Waitlist');
+      }
+
+      // Track Lead conversion for TVScientific
+      if (typeof window !== 'undefined') {
+        (function (j: { orderId: string; lastTouchChannel: string }) {
+          const l = 'tvscientific-pix-o-21b0ba9e-3013-4fd3-bdee-8b53298efcd4';
+          const e = encodeURIComponent;
+          const d = document;
+          const w = window.location;
+          const p = d.createElement("IMG");
+          const s = w.protocol + '//tvspix.com/t.png?t=' + (new Date()).getTime() + '&l=' + l + '&u3=' + e(w.href) + '&u1=lead_generated&u4=' + e(j.orderId) + '&u5=' + e(j.lastTouchChannel);
+          p.setAttribute("src", s);
+          p.setAttribute("height", "0");
+          p.setAttribute("width", "0");
+          p.setAttribute("alt", "");
+          p.style.display = 'none';
+          p.style.position = 'fixed';
+          d.body.appendChild(p);
+        })({
+          orderId: email,
+          lastTouchChannel: "",
+        });
+      }
+
       setTimeout(() => {
         setEmail("");
         setSubmitted(false);
         onClose();
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to join waitlist. Please try again.");
+      // Extract user-friendly error message from Convex error
+      let errorMessage = "Failed to join waitlist. Please try again.";
+
+      if (err instanceof Error) {
+        // Parse Convex error format: "[CONVEX ...] Uncaught Error: MESSAGE at handler ..."
+        const match = err.message.match(/Uncaught Error: (.+?) at /);
+        if (match && match[1]) {
+          errorMessage = match[1];
+        } else {
+          // Fallback: try to extract any meaningful message
+          errorMessage = err.message.split('\n')[0].replace(/^\[CONVEX.*?\]\s*/, '');
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

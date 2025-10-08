@@ -6,7 +6,11 @@ import { v } from "convex/values";
 // ============================================
 
 export const addGist = mutation({
-  args: { email: v.string() },
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     // Check if email already exists
     const existing = await ctx.db
@@ -21,6 +25,8 @@ export const addGist = mutation({
     // Add to waitlistGistAnswersai
     const id = await ctx.db.insert("waitlistGistAnswersai", {
       email: args.email,
+      name: args.name,
+      image: args.image,
       createdAt: Date.now(),
     });
 
@@ -50,7 +56,11 @@ export const countGist = query({
 // ============================================
 
 export const addAsk = mutation({
-  args: { email: v.string() },
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     // Check if email already exists
     const existing = await ctx.db
@@ -65,6 +75,8 @@ export const addAsk = mutation({
     // Add to waitlistgetaskanything
     const id = await ctx.db.insert("waitlistgetaskanything", {
       email: args.email,
+      name: args.name,
+      image: args.image,
       createdAt: Date.now(),
     });
 

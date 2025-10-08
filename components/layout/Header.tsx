@@ -28,7 +28,13 @@ export default function Header({ onOpenModal }: HeaderProps) {
           {/* Right side - Join Waitlist */}
           <div className="flex items-center gap-4">
             <button
-              onClick={onOpenModal}
+              onClick={() => {
+                // Track button click in Amplitude
+                if (typeof window !== 'undefined' && (window as any).amplitude) {
+                  (window as any).amplitude.track('Join Waitlist Button Clicked');
+                }
+                onOpenModal();
+              }}
               className="px-6 py-3 border border-[#353535] text-[#353535] rounded-full font-semibold hover:bg-dark hover:text-white hover:border-dark transition-all"
             >
               Join Waitlist

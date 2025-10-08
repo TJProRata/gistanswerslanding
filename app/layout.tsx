@@ -104,6 +104,19 @@ export default function RootLayout({
         </Script>
         {/* End TVScientific Pixel */}
 
+        {/* Amplitude Analytics */}
+        <Script id="amplitude-init" strategy="afterInteractive">
+          {`
+            !function(){"use strict";!function(e,t){var r=e.amplitude||{_q:[],_iq:{}};if(r.invoked)e.console&&console.error&&console.error("Amplitude snippet has been loaded.");else{r.invoked=!0;var n=t.createElement("script");n.type="text/javascript",n.integrity="sha384-+EO59vL/X7v6VE2s6/F4HxfHlK0nDUVWKVg8K9oUlvffAeeaShVBmbORTC2D3UF+",n.crossOrigin="anonymous",n.async=!0,n.src="https://cdn.amplitude.com/libs/analytics-browser-2.7.2-min.js.gz",n.onload=function(){e.amplitude.runQueuedFunctions||console.log("[Amplitude] Error: could not load SDK")};var s=t.getElementsByTagName("script")[0];s.parentNode.insertBefore(n,s);for(var o=function(){return this._q=[],this},i=["add","append","clearAll","prepend","set","setOnce","unset","preInsert","postInsert","remove","getUserProperties"],a=0;a<i.length;a++)r.Identify.prototype[i[a]]=o;for(var u=function(){this._q=[];return this},c=["setProductId","setQuantity","setPrice","setRevenue","setRevenueType","setEventProperties"],p=0;p<c.length;p++)r.Revenue.prototype[c[p]]=u;var l=["getDeviceId","setDeviceId","getSessionId","setSessionId","getUserId","setUserId","setOptOut","setTransport","reset"],d=["init","add","remove","track","logEvent","identify","groupIdentify","setGroup","revenue","flush"];for(var v=0;v<l.length;v++)r[l[v]]=function(e){return function(){r._q.push({name:e,args:Array.prototype.slice.call(arguments,0)})}}(l[v]);for(var f=0;f<d.length;f++)r[d[f]]=function(e){return function(){r._q.push({name:e,args:Array.prototype.slice.call(arguments,0)})}}(d[f]);e.amplitude=r}}(window,document);
+
+            amplitude.init('19e735be5fa8c1ba8413eec5978b65e4', {
+              defaultTracking: {
+                pageViews: true
+              }
+            });
+          `}
+        </Script>
+
         {/* Widget Script */}
         <script src="https://widget-deploy-hazel.vercel.app/widget.js" defer></script>
       </head>

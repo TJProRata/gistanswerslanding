@@ -20,92 +20,8 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { signIn, signOut } = useAuthActions();
-  const currentUser = useQuery(isOpen ? api.users.current : null);
+  const currentUser = useQuery(api.users.current);
   const addToWaitlist = useMutation(api.waitlist.addGist);
-
-  // Handle OAuth callback - add user to waitlist after Google sign-in
-  useEffect(() => {
-    if (currentUser && isOpen && activeTab === "google" && !submitted) {
-      const addOAuthUser = async () => {
-        try {
-          setIsSubmitting(true);
-          await addToWaitlist({
-            email: currentUser.email || "",
-            name: currentUser.name,
-            image: currentUser.image,
-          });
-          setSubmitted(true);
-
-          // Track all analytics
-          if (typeof window !== 'undefined') {
-            // Google Ads
-            if (window.gtag) {
-              window.gtag('event', 'conversion', {
-                'send_to': 'AW-17630115188/Hn0UCLTHr6gbEPTq2NZB',
-                'value': 1.0,
-                'currency': 'USD'
-              });
-            }
-
-            // Meta Pixel
-            if ((window as any).fbq) {
-              (window as any).fbq('track', 'Waitlist');
-            }
-
-            // TVScientific
-            (function (j: { orderId: string; lastTouchChannel: string }) {
-              const l = 'tvscientific-pix-o-21b0ba9e-3013-4fd3-bdee-8b53298efcd4';
-              const e = encodeURIComponent;
-              const d = document;
-              const w = window.location;
-              const p = d.createElement("IMG");
-              const s = w.protocol + '//tvspix.com/t.png?t=' + (new Date()).getTime() + '&l=' + l + '&u3=' + e(w.href) + '&u1=lead_generated&u4=' + e(j.orderId) + '&u5=' + e(j.lastTouchChannel);
-              p.setAttribute("src", s);
-              p.setAttribute("height", "0");
-              p.setAttribute("width", "0");
-              p.setAttribute("alt", "");
-              p.style.display = 'none';
-              p.style.position = 'fixed';
-              d.body.appendChild(p);
-            })({
-              orderId: currentUser.email || "",
-              lastTouchChannel: "",
-            });
-
-            // Amplitude
-            if ((window as any).amplitude) {
-              (window as any).amplitude.track('Join Waitlist Submitted', {
-                email: currentUser.email
-              });
-            }
-          }
-
-          // Sign out user (they only needed to auth for waitlist)
-          await signOut();
-
-          setTimeout(() => {
-            setSubmitted(false);
-            onClose();
-          }, 2000);
-        } catch (err) {
-          let errorMessage = "Failed to join waitlist. Please try again.";
-          if (err instanceof Error) {
-            const match = err.message.match(/Uncaught Error: (.+?) at /);
-            if (match && match[1]) {
-              errorMessage = match[1];
-            } else {
-              errorMessage = err.message.split('\n')[0].replace(/^\[CONVEX.*?\]\s*/, '');
-            }
-          }
-          setError(errorMessage);
-          await signOut(); // Sign out even on error
-          setIsSubmitting(false);
-        }
-      };
-
-      addOAuthUser();
-    }
-  }, [currentUser, isOpen, activeTab, submitted, addToWaitlist, signOut]);
 
   useEffect(() => {
     if (isOpen) {
@@ -127,16 +43,96 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
     };
   }, [isOpen]);
 
-  const handleGoogleSignIn = async () => {
-    setError("");
-    setIsSubmitting(true);
+  // Handle OAuth callback - add user to waitlist after Google sign-in
+  useEffect(() => {
+    if (currentUser && isOpen && activeTab === "google" && !submitted) {
+      const addOAuthUser = async () => {
+        try {
+          setIsSubmitting(true);
+          await addToWaitlist({
+            email: currentUser.email || "",
+            name: currentUser.name,
+            image: currentUser.image,
+          });
+          setSubmitted(true);
 
-    try {
-      await signIn("google", { redirectTo: window.location.href });
-    } catch (err) {
-      setError("Failed to sign in with Google. Please try again.");
-      setIsSubmitting(false);
+          // Track conversion for Google Ads
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'conversion', {
+              'send_to': 'AW-17630115188/Hn0UCLTHr6gbEPTq2NZB',
+              'value': 1.0,
+              'currency': 'USD'
+            });
+          }
+
+          // Track Waitlist conversion for Meta Pixel
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'Waitlist');
+          }
+
+          // Track Lead conversion for TVScientific
+          if (typeof window !== 'undefined') {
+            (function (j: { orderId: string; lastTouchChannel: string }) {
+              const l = 'tvscientific-pix-o-21b0ba9e-3013-4fd3-bdee-8b53298efcd4';
+              const e = encodeURIComponent;
+              const doc = document;
+              const loc = window.location;
+              const p = doc.createElement("IMG");
+              const s = loc.protocol + '//tvspix.com/t.png?t=' + (new Date()).getTime() + '&l=' + l + '&u3=' + e(loc.href) + '&u1=lead_generated&u4=' + e(j.orderId) + '&u5=' + e(j.lastTouchChannel);
+              p.setAttribute("src", s);
+              p.setAttribute("height", "0");
+              p.setAttribute("width", "0");
+              p.setAttribute("alt", "");
+              p.style.display = 'none';
+              p.style.position = 'fixed';
+              doc.body.appendChild(p);
+            })({
+              orderId: currentUser.email || "",
+              lastTouchChannel: "",
+            });
+          }
+
+          // Track form submission in Amplitude
+          if (typeof window !== 'undefined' && (window as any).amplitude) {
+            (window as any).amplitude.track('Join Waitlist Submitted', {
+              email: currentUser.email || ""
+            });
+          }
+
+          // Sign out user (they only needed to auth for waitlist)
+          await signOut();
+
+          setTimeout(() => {
+            setSubmitted(false);
+            onClose();
+          }, 2000);
+        } catch (err) {
+          // Extract user-friendly error message from Convex error
+          let errorMessage = "Failed to join waitlist. Please try again.";
+
+          if (err instanceof Error) {
+            // Parse Convex error format: "[CONVEX ...] Uncaught Error: MESSAGE at handler ..."
+            const match = err.message.match(/Uncaught Error: (.+?) at /);
+            if (match && match[1]) {
+              errorMessage = match[1];
+            } else {
+              // Fallback: try to extract any meaningful message
+              errorMessage = err.message.split('\n')[0].replace(/^\[CONVEX.*?\]\s*/, '');
+            }
+          }
+
+          setError(errorMessage);
+          await signOut();
+          setIsSubmitting(false);
+        }
+      };
+
+      addOAuthUser();
     }
+  }, [currentUser, isOpen, activeTab, submitted, addToWaitlist, signOut]);
+
+  const handleGoogleSignIn = () => {
+    void signIn("google");
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -272,8 +268,9 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
 
           {/* Form */}
           {!submitted ? (
-            <div className="space-y-4">
-              {activeTab === "email" ? (
+            <>
+              {/* Email Tab */}
+              {activeTab === "email" && (
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div>
                     <label htmlFor="email" className="block mb-2 font-medium">
@@ -305,14 +302,13 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
                     {isSubmitting ? "Joining..." : "Join Waitlist"}
                   </Button>
                 </form>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600 text-center">
-                    Sign in with your Google account to join the waitlist
-                  </p>
+              )}
 
+              {/* Google Tab */}
+              {activeTab === "google" && (
+                <div className="space-y-4">
                   {error && (
-                    <p className="text-sm text-red-600 text-center">{error}</p>
+                    <p className="text-sm text-red-600">{error}</p>
                   )}
 
                   <button
@@ -342,7 +338,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
                   </button>
                 </div>
               )}
-            </div>
+            </>
           ) : (
             <div className="text-center py-8">
               <p className="text-xl font-semibold text-grimace">Thank you!</p>

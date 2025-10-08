@@ -20,7 +20,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { signIn, signOut } = useAuthActions();
-  const currentUser = useQuery(isOpen ? api.users.current : "skip");
+  const currentUser = useQuery(isOpen ? api.users.current : null);
   const addToWaitlist = useMutation(api.waitlist.addGist);
 
   // Handle OAuth callback - add user to waitlist after Google sign-in

@@ -21,7 +21,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
 
   const { signIn, signOut } = useAuthActions();
   const currentUser = useQuery(api.users.current);
-  const addToWaitlist = useMutation(api.waitlist.addAsk);
+  const addToWaitlist = useMutation(api.waitlist.addGist);
 
   useEffect(() => {
     if (isOpen) {

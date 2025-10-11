@@ -17,14 +17,17 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleAuth, setIsGoogleAuth] = useState(false);
+  const [oauthProcessed, setOauthProcessed] = useState(false);
 
   const { signIn, signOut } = useAuthActions();
   const currentUser = useQuery(api.users.current);
   const addToWaitlist = useMutation(api.waitlist.addGist);
 
   useEffect(() => {
-    if (isOpen) {
+    // Show modal if explicitly open OR if we have submitted state (OAuth confirmation)
+    const shouldShowModal = isOpen || submitted;
+
+    if (shouldShowModal) {
       // Calculate scrollbar width before hiding it
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
 
@@ -41,11 +44,14 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
       document.body.style.overflow = "unset";
       document.body.style.paddingRight = "0px";
     };
-  }, [isOpen]);
+  }, [isOpen, submitted]);
 
   // Handle OAuth callback - add user to waitlist after Google sign-in
+  // This runs when user returns from OAuth, regardless of modal state
   useEffect(() => {
-    if (currentUser && isOpen && isGoogleAuth && !submitted) {
+    if (currentUser && !oauthProcessed) {
+      setOauthProcessed(true);
+
       const addOAuthUser = async () => {
         try {
           setIsSubmitting(true);
@@ -132,7 +138,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
 
       addOAuthUser();
     }
-  }, [currentUser, isOpen, isGoogleAuth, submitted, addToWaitlist, signOut]);
+  }, [currentUser, oauthProcessed, addToWaitlist, signOut, onClose]);
 
   const handleGoogleSignIn = () => {
     // Track Google OAuth button click
@@ -143,8 +149,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
       });
     }
 
-    setIsGoogleAuth(true);
-    void signIn("google");
+    void signIn("google", { redirectTo: window.location.origin });
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -238,7 +243,8 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
     }
   };
 
-  if (!isOpen) return null;
+  // Show modal if explicitly open OR if we have a submitted state (from OAuth)
+  if (!isOpen && !submitted) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

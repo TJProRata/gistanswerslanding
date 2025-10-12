@@ -117,8 +117,12 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* Widget Script */}
-        <Script src="https://widget-deploy-hazel.vercel.app/widget.js" strategy="afterInteractive" />
+        {/* Widget Script - Enable fadeScroll */}
+        <Script
+          src="https://widget-deploy-hazel.vercel.app/widget.js"
+          data-config='{"fadeScroll": true}'
+          strategy="lazyOnload"
+        />
       </head>
       <body className="font-inter antialiased">
         <ConvexClientProvider>{children}</ConvexClientProvider>

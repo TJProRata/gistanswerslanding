@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { motion } from "framer-motion";
 import { api } from "../../convex/_generated/api";
 import Button from "./Button";
 
@@ -17,15 +18,36 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [oauthProcessed, setOauthProcessed] = useState(false);
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  const [oauthSuccess, setOauthSuccess] = useState(false);
 
-  const { signIn, signOut } = useAuthActions();
-  const currentUser = useQuery(api.users.current);
+  const { signIn } = useAuthActions();
   const addToWaitlist = useMutation(api.waitlist.addGist);
 
+  // Handle OAuth return - show spinner then success animation
   useEffect(() => {
-    // Show modal if explicitly open OR if we have submitted state (OAuth confirmation)
-    const shouldShowModal = isOpen || submitted;
+    const oauthIntent = localStorage.getItem('gist_oauth_intent');
+    if (oauthIntent) {
+      localStorage.removeItem('gist_oauth_intent');
+      setIsProcessingOAuth(true);
+
+      // Stage 1: Show spinner for 1 second
+      setTimeout(() => {
+        setIsProcessingOAuth(false);
+        setOauthSuccess(true);
+
+        // Stage 2: Show checkmark for 2 seconds, then close
+        setTimeout(() => {
+          setOauthSuccess(false);
+          onClose();
+        }, 2000);
+      }, 1000);
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    // Show modal if explicitly open OR if we have submitted state OR processing OAuth or showing OAuth success
+    const shouldShowModal = isOpen || submitted || isProcessingOAuth || oauthSuccess;
 
     if (shouldShowModal) {
       // Calculate scrollbar width before hiding it
@@ -44,101 +66,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
       document.body.style.overflow = "unset";
       document.body.style.paddingRight = "0px";
     };
-  }, [isOpen, submitted]);
-
-  // Handle OAuth callback - add user to waitlist after Google sign-in
-  // This runs when user returns from OAuth, regardless of modal state
-  useEffect(() => {
-    if (currentUser && !oauthProcessed) {
-      setOauthProcessed(true);
-
-      const addOAuthUser = async () => {
-        try {
-          setIsSubmitting(true);
-          await addToWaitlist({
-            email: currentUser.email || "",
-            name: currentUser.name,
-            image: currentUser.image,
-          });
-          setSubmitted(true);
-
-          // Track conversion for Google Ads
-          if (typeof window !== 'undefined' && window.gtag) {
-            window.gtag('event', 'conversion', {
-              'send_to': 'AW-17630115188/Hn0UCLTHr6gbEPTq2NZB',
-              'value': 1.0,
-              'currency': 'USD'
-            });
-          }
-
-          // Track Waitlist conversion for Meta Pixel
-          if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'Waitlist');
-          }
-
-          // Track Lead conversion for TVScientific
-          if (typeof window !== 'undefined') {
-            (function (j: { orderId: string; lastTouchChannel: string }) {
-              const l = 'tvscientific-pix-o-21b0ba9e-3013-4fd3-bdee-8b53298efcd4';
-              const e = encodeURIComponent;
-              const doc = document;
-              const loc = window.location;
-              const p = doc.createElement("IMG");
-              const s = loc.protocol + '//tvspix.com/t.png?t=' + (new Date()).getTime() + '&l=' + l + '&u3=' + e(loc.href) + '&u1=lead_generated&u4=' + e(j.orderId) + '&u5=' + e(j.lastTouchChannel);
-              p.setAttribute("src", s);
-              p.setAttribute("height", "0");
-              p.setAttribute("width", "0");
-              p.setAttribute("alt", "");
-              p.style.display = 'none';
-              p.style.position = 'fixed';
-              doc.body.appendChild(p);
-            })({
-              orderId: currentUser.email || "",
-              lastTouchChannel: "",
-            });
-          }
-
-          // Track form submission in Amplitude
-          if (typeof window !== 'undefined' && (window as any).amplitude) {
-            console.log('📊 Amplitude Event:', 'Join Waitlist Submitted', { email: currentUser.email, method: 'Google OAuth' });
-            (window as any).amplitude.track('Join Waitlist Submitted', {
-              email: currentUser.email || "",
-              method: 'oauth',
-              site: 'gistanswers'
-            });
-          }
-
-          // Sign out user (they only needed to auth for waitlist)
-          await signOut();
-
-          setTimeout(() => {
-            setSubmitted(false);
-            onClose();
-          }, 2000);
-        } catch (err) {
-          // Extract user-friendly error message from Convex error
-          let errorMessage = "Failed to join waitlist. Please try again.";
-
-          if (err instanceof Error) {
-            // Parse Convex error format: "[CONVEX ...] Uncaught Error: MESSAGE at handler ..."
-            const match = err.message.match(/Uncaught Error: (.+?) at /);
-            if (match && match[1]) {
-              errorMessage = match[1];
-            } else {
-              // Fallback: try to extract any meaningful message
-              errorMessage = err.message.split('\n')[0].replace(/^\[CONVEX.*?\]\s*/, '');
-            }
-          }
-
-          setError(errorMessage);
-          await signOut();
-          setIsSubmitting(false);
-        }
-      };
-
-      addOAuthUser();
-    }
-  }, [currentUser, oauthProcessed, addToWaitlist, signOut, onClose]);
+  }, [isOpen, submitted, isProcessingOAuth, oauthSuccess]);
 
   const handleGoogleSignIn = () => {
     // Track Google OAuth button click
@@ -148,6 +76,9 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
         site: 'gistanswers'
       });
     }
+
+    // Set OAuth intent in localStorage before redirect
+    localStorage.setItem('gist_oauth_intent', 'true');
 
     void signIn("google", { redirectTo: window.location.origin });
   };
@@ -243,8 +174,8 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
     }
   };
 
-  // Show modal if explicitly open OR if we have a submitted state (from OAuth)
-  if (!isOpen && !submitted) return null;
+  // Show modal if explicitly open OR if we have a submitted state OR processing OAuth or showing OAuth success
+  if (!isOpen && !submitted && !isProcessingOAuth && !oauthSuccess) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -272,7 +203,31 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
           </div>
 
           {/* Form */}
-          {!submitted ? (
+          {isProcessingOAuth ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-xl font-semibold text-gray-900">Processing your signup...</p>
+            </div>
+          ) : oauthSuccess ? (
+            <div className="text-center py-8">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-4"
+              >
+                <Check className="w-12 h-12 text-white" strokeWidth={3} />
+              </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl font-semibold text-gray-900"
+              >
+                Success! You're on the list.
+              </motion.p>
+            </div>
+          ) : !submitted ? (
             <>
               {/* Google Button */}
               <button

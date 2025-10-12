@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
+import ContactModal from "@/components/ui/ContactModal";
 import FAQAccordion from "@/components/ui/FAQAccordion";
 
 const faqItems = [
@@ -46,6 +47,7 @@ const faqItems = [
 
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   return (
     <>
@@ -277,8 +279,9 @@ export default function HomePage() {
         </section>
       </main>
 
-      <Footer />
+      <Footer onOpenContactModal={() => setIsContactModalOpen(true)} />
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
     </>
   );
 }

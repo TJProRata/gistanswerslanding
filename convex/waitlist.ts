@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 // ============================================
 // GIST ANSWERS WAITLIST FUNCTIONS
@@ -29,6 +30,20 @@ export const addGist = mutation({
       image: args.image,
       createdAt: Date.now(),
     });
+
+    console.log("[WAITLIST] User added, scheduling email for:", args.email);
+
+    // Send confirmation email (non-blocking)
+    try {
+      await ctx.scheduler.runAfter(0, internal.email.sendWaitlistConfirmation, {
+        email: args.email,
+        name: args.name,
+      });
+      console.log("[WAITLIST] Email scheduled successfully");
+    } catch (error) {
+      console.error("[WAITLIST] Email scheduling failed:", error);
+      // Don't throw - still return success for waitlist signup
+    }
 
     return id;
   },
@@ -60,6 +75,7 @@ export const addAsk = mutation({
     email: v.string(),
     name: v.optional(v.string()),
     image: v.optional(v.string()),
+    isOauth: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Check if email already exists
@@ -78,7 +94,22 @@ export const addAsk = mutation({
       name: args.name,
       image: args.image,
       createdAt: Date.now(),
+      isOauth: args.isOauth ?? false,
     });
+
+    console.log("[WAITLIST] User added, scheduling email for:", args.email);
+
+    // Send confirmation email (non-blocking)
+    try {
+      await ctx.scheduler.runAfter(0, internal.email.sendWaitlistConfirmation, {
+        email: args.email,
+        name: args.name,
+      });
+      console.log("[WAITLIST] Email scheduled successfully");
+    } catch (error) {
+      console.error("[WAITLIST] Email scheduling failed:", error);
+      // Don't throw - still return success for waitlist signup
+    }
 
     return id;
   },

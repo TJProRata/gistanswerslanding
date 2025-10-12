@@ -96,26 +96,32 @@ export default function Footer({ onOpenContactModal }: FooterProps) {
               All rights reserved.
             </p>
 
-            <Link
-              href="/terms"
+            <a
+              href="https://gist.ai/terms/"
+              target="_blank"
+              rel="noopener"
               className="block text-sm font-semibold hover:text-[#9f88bc] transition-colors"
             >
               Terms of use
-            </Link>
+            </a>
 
-            <Link
-              href="/privacy"
+            <a
+              href="https://gist.ai/privacy/"
+              target="_blank"
+              rel="noopener"
               className="block text-sm font-semibold hover:text-[#9f88bc] transition-colors"
             >
               Privacy policy
-            </Link>
+            </a>
 
-            <Link
-              href="/consumer-choices"
+            <a
+              href="https://gist.ai/consumer-choices/"
+              target="_blank"
+              rel="noopener"
               className="block text-sm font-semibold hover:text-[#9f88bc] transition-colors"
             >
               Consumer choices
-            </Link>
+            </a>
           </div>
         </div>
       </div>

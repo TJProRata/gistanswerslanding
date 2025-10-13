@@ -113,7 +113,7 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
 
       // Track Waitlist conversion for Meta Pixel
       if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'Waitlist');
+        (window as any).fbq('trackCustom', 'Waitlist');
       }
 
       // Track Lead conversion for TVScientific

@@ -17,6 +17,7 @@ import type * as auth from "../auth.js";
 import type * as contacts from "../contacts.js";
 import type * as email from "../email.js";
 import type * as http from "../http.js";
+import type * as slack from "../slack.js";
 import type * as users from "../users.js";
 import type * as waitlist from "../waitlist.js";
 
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   contacts: typeof contacts;
   email: typeof email;
   http: typeof http;
+  slack: typeof slack;
   users: typeof users;
   waitlist: typeof waitlist;
 }>;

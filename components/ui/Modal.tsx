@@ -20,17 +20,15 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   const [oauthSuccess, setOauthSuccess] = useState(false);
-  const [oauthNotificationSent, setOauthNotificationSent] = useState(false);
 
   const { signIn } = useAuthActions();
   const addToWaitlist = useMutation(api.waitlist.addGist);
-  const notifyOAuthSignup = useMutation(api.waitlist.notifyOAuthSignup);
-  const currentUser = useQuery(api.users.current);
 
   // Handle OAuth return - UI only (spinner and success animation)
   useEffect(() => {
     const oauthIntent = localStorage.getItem('gist_oauth_intent');
     if (oauthIntent) {
+      localStorage.removeItem('gist_oauth_intent');
       setIsProcessingOAuth(true);
 
       // Stage 1: Show spinner for 1 second
@@ -46,30 +44,6 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
       }, 1000);
     }
   }, [onClose]);
-
-  // Send OAuth notification when user is authenticated
-  useEffect(() => {
-    const oauthIntent = localStorage.getItem('gist_oauth_intent');
-
-    // Only send notification when:
-    // 1. OAuth intent exists
-    // 2. User is authenticated (currentUser loaded)
-    // 3. Haven't sent notification yet
-    if (oauthIntent && currentUser && !oauthNotificationSent) {
-      console.log("[OAUTH] User authenticated, sending notification for:", currentUser.email);
-
-      notifyOAuthSignup()
-        .then(() => {
-          console.log("[OAUTH] Notification sent successfully");
-          setOauthNotificationSent(true);
-          localStorage.removeItem('gist_oauth_intent');
-        })
-        .catch((error) => {
-          console.error("[OAUTH] Notification failed:", error);
-          // Don't retry - just log the error
-        });
-    }
-  }, [currentUser, oauthNotificationSent, notifyOAuthSignup]);
 
   useEffect(() => {
     // Show modal if explicitly open OR if we have submitted state OR processing OAuth or showing OAuth success

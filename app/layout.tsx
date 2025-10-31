@@ -113,7 +113,7 @@ export default function RootLayout({
           {`
             (function checkAmplitude() {
               if (window.amplitude && window.amplitude.init) {
-                window.amplitude.init('19e735be5fa8c1ba8413eec5978b65e4', {
+                window.amplitude.init('555572da12f1ba1b4229a958f7418b12', {
                   defaultTracking: {
                     pageViews: true
                   }

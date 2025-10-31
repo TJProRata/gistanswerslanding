@@ -24,12 +24,36 @@ export default function Modal({ isOpen, onClose }: ModalProps) {
   const { signIn } = useAuthActions();
   const addToWaitlist = useMutation(api.waitlist.addGist);
 
-  // Handle OAuth return - UI only (spinner and success animation)
+  // Handle OAuth return - track conversion and show success animation
   useEffect(() => {
     const oauthIntent = localStorage.getItem('gist_oauth_intent');
     if (oauthIntent) {
       localStorage.removeItem('gist_oauth_intent');
       setIsProcessingOAuth(true);
+
+      // Track conversion events for OAuth signup
+      // Track conversion for Google Ads
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'conversion', {
+          'send_to': 'AW-17630115188/Hn0UCLTHr6gbEPTq2NZB',
+          'value': 1.0,
+          'currency': 'USD'
+        });
+      }
+
+      // Track Lead conversion for Meta Pixel
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Lead');
+      }
+
+      // Track form submission in Amplitude
+      if (typeof window !== 'undefined' && (window as any).amplitude) {
+        console.log('📊 Amplitude Event:', 'Join Waitlist Submitted', { method: 'oauth' });
+        (window as any).amplitude.track('Join Waitlist Submitted', {
+          method: 'oauth',
+          site: 'gistanswers'
+        });
+      }
 
       // Stage 1: Show spinner for 1 second
       setTimeout(() => {
